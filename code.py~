@@ -1,0 +1,58 @@
+#! /usr/bin/env python
+import numpy as np
+import scipy.linalg as LA
+import random
+import itertools
+def herm(ww):
+    if(np.allclose(ww, np.conj(ww).T)):
+        print("Hermitian")
+    elif(np.allclose(ww, -1* np.conj(ww).T)):
+        print("Anti Hermitian")
+    else:
+        print("Not hermitian")
+
+sig1 = np.array([[0,1],[1,0]])
+sig2 = np.array([[0 , -1j],[1j , 0]])
+sig3 = np.array([[1 , 0j ],[0j, -1]])
+herm(sig1)
+herm(sig2)
+herm(sig3)
+
+J = 1
+
+
+
+N = 8
+q = 4
+if(q>N):
+    print("q should be less than N")
+    exit(0)
+a = np.array([[1,2,3,4],[1,4,5,2],[2,4,5,1],[2,4,5,5]])
+herm(a)
+gamma = []
+gamma.append(sig1)
+gamma.append( -1j * sig2)
+for i in range(2,N-1,2):
+    for l in range(i):
+        gamma[l] = np.kron(gamma[l],sig3)
+    iden = np.identity(2**int(i/2))
+    gamma.append(np.kron(iden,1j*sig1))
+    gamma.append(np.kron(iden,1j*sig2))
+    for ww in gamma:
+        herm(ww)
+        print(ww.shape)
+        #print(ww)
+    print(" D : ",i+2," dim :", 2**int(i/2+ 1),"seems to work",gamma[0].shape)
+    input()
+H = np.zeros([2**int(N/2),2**int(N/2)])
+for i in itertools.permutations(gamma,q):
+    print(random.gauss(0,J))
+    ans = np.identity(2**int(N/2))
+    for k in i:
+       ans = np.matmul(ans,k)
+    ans = random.gauss(0,J)*ans
+    H = H + ans
+
+print(H)
+print(H.shape)
+herm(ww)
