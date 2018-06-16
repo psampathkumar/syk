@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 import numpy as np
+from tqdm import tqdm
 import scipy.linalg as LA
 import random
 import itertools
@@ -16,18 +17,18 @@ def herm(ww):
 
 def check_sparcity(a):
     k = np.hstack(a)
-    matgen = (0 if abs(i)<1e-5 else 1 for i in k)
-    nonzero = sum(matgen)
-    mat = []
-    for i in matgen:
-        print(i)
-        mat.append(i)
+    mat = np.zeros(2**N)
+    for i in range(len(k)):
+        if abs(k[i])>1e-5:
+            mat[i] = 1
+    nonzero = sum(mat)
     print(len(mat))
     return nonzero/len(k),mat
 
 
 J = 1
-N = 12
+N = 20
+print(2**N,2**int(N/2))
 q = 4
 if(q>N):
     print("q should be less than N")
@@ -54,8 +55,8 @@ def create_H():
     gamma = create_gamma()
     print("Created Gamma matrices")
     H = np.zeros([2**int(N/2),2**int(N/2)])
-    print(sum(1 for _ in itertools.permutations(gamma,q)))
-    for i in itertools.permutations(gamma,q):
+    length =  sum(1 for _ in itertools.permutations(gamma,q))
+    for i in tqdm(itertools.permutations(gamma,q),total=length):
         ans = np.identity(2**int(N/2))
         if not (len(i) == q):
             print("ERROR")
@@ -65,18 +66,27 @@ def create_H():
         ans = random.gauss(0,J)*ans
         H = np.add(H,ans)
     return H
+
 H = create_H()
 per,mat = check_sparcity(H)
 print(per)
+plt.imshow(np.array(mat).reshape(2**int(N/2),2**int(N/2)))
+plt.show()
+'''
+gamma = create_gamma()
+kk = 0
+for H in gamma:
+    per,mat = check_sparcity(H)
+    print(per)
+    plt.title(str(kk))
+    kk = kk + 1
+    plt.imshow(np.array(mat).reshape(2**int(N/2),2**int(N/2)))
+    plt.show()
 
 '''
-H = create_H()
 print(H.shape)
 print("Starting Eigenvalue Computation")
 eig = LA.eigvalsh(H)
 print(eig)
-'''
-plt.figure(1)
-plt.imshow(np.array(mat).reshape(2**int(N/2),2**int(N/2)))
-#plt.hist(eig, 20, normed=0, histtype='step',label ='Energy')
+plt.hist(eig, 20, normed=0, histtype='step',label ='Energy')
 plt.show()
