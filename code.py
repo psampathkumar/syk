@@ -6,6 +6,8 @@ import random
 import itertools
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+#import os
+#os.system("taskset -p 0xff %d" % os.getpid())
 kkk=cm.gist_stern # Put the Plotting Style here
 def herm(ww):
     if(np.allclose(ww, np.conj(ww).T)):
@@ -27,12 +29,8 @@ def check_sparcity(a):
 
 
 J = 1
-N = 20
+N = 16
 print(2**N,2**int(N/2))
-q = 4
-if(q>N):
-    print("q should be less than N")
-    exit(0)
 
 def create_gamma():
     sig1 = np.array([[0,1],[1,0]])
@@ -50,13 +48,11 @@ def create_gamma():
         print(" D : ",i+2," dim :", 2**int(i/2+ 1),"seems to work",gamma[0].shape)
     return gamma
 
-
-def create_H():
-    gamma = create_gamma()
+def create_free_H(gamma,q=4):
     print("Created Gamma matrices")
     H = np.zeros([2**int(N/2),2**int(N/2)])
     length =  sum(1 for _ in itertools.permutations(gamma,q))
-    for i in tqdm(itertools.permutations(gamma,q),total=length):
+    for i in tqdm(itertools.permutations(gamma,q),total=length,desc=str(q)+":Body Term"):
         ans = np.identity(2**int(N/2))
         if not (len(i) == q):
             print("ERROR")
@@ -65,6 +61,14 @@ def create_H():
             ans = np.matmul(ans,k)
         ans = random.gauss(0,J)*ans
         H = np.add(H,ans)
+    return H
+
+def create_H():
+    coup = 2 #Coupling term
+    gamma = create_gamma()
+    free_H1 = create_free_H(gamma)
+    free_H2 = create_free_H(gamma,coup)
+    H = np.add(free_H1,free_H2)
     return H
 
 H = create_H()
@@ -89,4 +93,6 @@ print("Starting Eigenvalue Computation")
 eig = LA.eigvalsh(H)
 print(eig)
 plt.hist(eig, 20, normed=0, histtype='step',label ='Energy')
-plt.show()
+#plt.show()
+plt.savefig("Single_SYK",bbox='tight')
+plt.close()
