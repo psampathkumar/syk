@@ -8,3 +8,8 @@
   * Try to do this in Dim 2 in kinetic perturbation upto second order
 
   
+# Log
+### 19/6/18
+ * Implemented the Coupled SYK in the existing Code
+### 18/6/18
+ * Got the Problem of Coupled SYK from Gautham

@@ -67,15 +67,15 @@ def create_H():
     coup = 2 #Coupling term
     gamma = create_gamma()
     free_H1 = create_free_H(gamma)
-    free_H2 = create_free_H(gamma,coup)
-    H = np.add(free_H1,free_H2)
-    return H
+    #free_H2 = create_free_H(gamma,coup)
+    #H = np.add(free_H1,free_H2)
+    return free_H1
 
 H = create_H()
 per,mat = check_sparcity(H)
 print(per)
-plt.imshow(np.array(mat).reshape(2**int(N/2),2**int(N/2)))
-plt.show()
+#plt.imshow(np.array(mat).reshape(2**int(N/2),2**int(N/2)))
+#plt.show()
 '''
 gamma = create_gamma()
 kk = 0
@@ -94,5 +94,5 @@ eig = LA.eigvalsh(H)
 print(eig)
 plt.hist(eig, 20, normed=0, histtype='step',label ='Energy')
 #plt.show()
-plt.savefig("Single_SYK",bbox='tight')
+plt.savefig("Single_SYK_q4",bbox='tight')
 plt.close()
