@@ -9,6 +9,8 @@ import matplotlib.cm as cm
 #import os
 #os.system("taskset -p 0xff %d" % os.getpid())
 kkk=cm.gist_stern # Put the Plotting Style here
+print("MAKE SURE YOU CHANGE THE FILE NAME")
+input("Press enter to continue")
 def herm(ww):
     if(np.allclose(ww, np.conj(ww).T)):
         return "Hermitian"
@@ -29,7 +31,7 @@ def check_sparcity(a):
 
 
 J = 1
-N = 16
+N = 14
 print(2**N,2**int(N/2))
 
 def create_gamma():
@@ -48,7 +50,7 @@ def create_gamma():
         print(" D : ",i+2," dim :", 2**int(i/2+ 1),"seems to work",gamma[0].shape)
     return gamma
 
-def create_free_H(gamma,q=4):
+def create_free_H(gamma,q=4,rand=True,g=1):
     print("Created Gamma matrices")
     H = np.zeros([2**int(N/2),2**int(N/2)])
     length =  sum(1 for _ in itertools.permutations(gamma,q))
@@ -59,17 +61,21 @@ def create_free_H(gamma,q=4):
             exit(0)
         for k in i:
             ans = np.matmul(ans,k)
-        ans = random.gauss(0,J)*ans
+        if(rand):
+            ans = random.gauss(0,J)*ans
+        else:
+            ans = g*ans #Multiply by the factor of g here.!
+        
         H = np.add(H,ans)
     return H
 
-def create_H():
-    coup = 2 #Coupling term
+def create_H(couple=False):
+    coup = 6 #Coupling term
     gamma = create_gamma()
-    free_H1 = create_free_H(gamma)
-    #free_H2 = create_free_H(gamma,coup)
-    #H = np.add(free_H1,free_H2)
-    return free_H1
+    free_H1 = np.zeros([2**int(N/2),2**int(N/2)])#create_free_H(gamma)
+    free_H2 = create_free_H(gamma,coup,not couple)
+    H = np.add(free_H1,free_H2)
+    return H
 
 H = create_H()
 per,mat = check_sparcity(H)
@@ -94,5 +100,5 @@ eig = LA.eigvalsh(H)
 print(eig)
 plt.hist(eig, 20, normed=0, histtype='step',label ='Energy')
 #plt.show()
-plt.savefig("Single_SYK_q4",bbox='tight')
+plt.savefig("Single_SYK_q6",bbox='tight')
 plt.close()

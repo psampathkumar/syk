@@ -8,3 +8,5 @@ For all the below distributions J = 1
 ![](./Single_SYK_q2.png)
 # Single Free SYK for N=16 , q = 4
 ![](./Single_SYK_q4.png)
+# Single Free SYK for N=14 , q = 6
+![](./Single_SYK_q6.png)
