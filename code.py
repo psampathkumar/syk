@@ -31,7 +31,7 @@ def check_sparcity(a):
 
 
 J = 1
-N = 14
+N = 12
 print(2**N,2**int(N/2))
 
 def create_gamma():
@@ -70,7 +70,7 @@ def create_free_H(gamma,q=4,rand=True,g=1):
     return H
 
 def create_H(couple=False):
-    coup = 6 #Coupling term
+    coup = 4 #Coupling term
     gamma = create_gamma()
     free_H1 = np.zeros([2**int(N/2),2**int(N/2)])#create_free_H(gamma)
     free_H2 = create_free_H(gamma,coup,not couple)
@@ -100,5 +100,5 @@ eig = LA.eigvalsh(H)
 print(eig)
 plt.hist(eig, 20, normed=0, histtype='step',label ='Energy')
 #plt.show()
-plt.savefig("Single_SYK_q6",bbox='tight')
+plt.savefig("Single_SYK_q4_N12",bbox='tight')
 plt.close()

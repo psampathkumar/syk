@@ -14,6 +14,8 @@
 ### 20/6/18
  * Decided to solve the problem of Coupled Qbits
  * Problem of Majorana Ferminons in 2-d crops up
+ * The energy distributions lack any structure for N<=12. Need to find a better way if we are working on coupled
+	SYK or other higher q models which force us to use lesser N
 ### 19/6/18
  * Implemented the Coupled SYK in the existing Code
 ### 18/6/18
