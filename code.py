@@ -6,8 +6,7 @@ import random
 import itertools
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-#import os
-#os.system("taskset -p 0xff %d" % os.getpid())
+
 kkk=cm.gist_stern # Put the Plotting Style here
 print("MAKE SURE YOU CHANGE THE FILE NAME")
 input("Press enter to continue")
@@ -31,7 +30,7 @@ def check_sparcity(a):
 
 
 J = 1
-N = 12
+N = 8
 print(2**N,2**int(N/2))
 
 def create_gamma():
@@ -54,7 +53,7 @@ def create_free_H(gamma,q=4,rand=True,g=1):
     print("Created Gamma matrices")
     H = np.zeros([2**int(N/2),2**int(N/2)])
     length =  sum(1 for _ in itertools.permutations(gamma,q))
-    for i in tqdm(itertools.permutations(gamma,q),total=length,desc=str(q)+":Body Term"):
+    for i in tqdm(itertools.combinations(gamma,q),total=length,desc=str(q)+":Body Term"):
         ans = np.identity(2**int(N/2))
         if not (len(i) == q):
             print("ERROR")
@@ -72,14 +71,20 @@ def create_free_H(gamma,q=4,rand=True,g=1):
 def create_H(couple=False):
     coup = 4 #Coupling term
     gamma = create_gamma()
-    free_H1 = np.zeros([2**int(N/2),2**int(N/2)])#create_free_H(gamma)
-    free_H2 = create_free_H(gamma,coup,not couple)
+    free_H1 = np.kron(np.array(create_free_H(gamma)),np.identity(2**int(N/2)))
+    free_H2 = np.kron(np.identity(2**int(N/2)),np.array(create_free_H(gamma)))
+    coup = np.zeros([2**int(N),2**int(N)])
+    for k in gamma:
+        coup = np.add(coup,np.kron(k,k))
     H = np.add(free_H1,free_H2)
+    H = np.add(coup,H)
     return H
 
 H = create_H()
-per,mat = check_sparcity(H)
-print(per)
+print("Hamiltonian Created")
+print(herm(H))
+#per,mat = check_sparcity(H)
+#print(per)
 #plt.imshow(np.array(mat).reshape(2**int(N/2),2**int(N/2)))
 #plt.show()
 '''
@@ -100,5 +105,5 @@ eig = LA.eigvalsh(H)
 print(eig)
 plt.hist(eig, 20, normed=0, histtype='step',label ='Energy')
 #plt.show()
-plt.savefig("Single_SYK_q4_N12",bbox='tight')
+plt.savefig("Coupled_SYK_q4_N12",bbox='tight')
 plt.close()
