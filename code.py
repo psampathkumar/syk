@@ -80,6 +80,57 @@ def create_H(couple=False):
     H = np.add(coup,H)
     return H
 
+
+def find_eigval(H):
+    print("Importing Stuff")
+    import sys, slepc4py
+    from petsc4py import PETSc
+    from slepc4py import SLEPc
+    import numpy
+    A = PETSc.Mat().create()
+    print(H.shape)
+    A.setSizes(H.shape)
+    A.setFromOptions()
+    A.setUp()
+    A[:,:] = H[:,:]
+    A.assemble()
+    E = SLEPc.EPS()
+    E.create()
+    E.setOperators(A)
+    E.setProblemType(SLEPc.EPS.ProblemType.HEP)
+    E.setDimensions(nev = H.shape[0])
+    E.setTolerances(1e-8,1000)
+    E.setFromOptions()
+    E.solve()
+    Print = PETSc.Sys.Print
+    Print()
+    Print("******************************")
+    Print("*** SLEPc Solution Results ***")
+    Print("******************************")
+    Print()
+    
+    its = E.getIterationNumber()
+    Print("Number of iterations of the method: %d" % its)
+    
+    eps_type = E.getType()
+    Print("Solution method: %s" % eps_type)
+    
+    nev, ncv, mpd = E.getDimensions()
+    Print("Number of requested eigenvalues: %d" % nev)
+    Print(" the maximum dimension of the subspace to be used by the solver: %d " % ncv)
+    Print(" the maximum dimension allowed for the projected problem: %d" % mpd)
+    
+    tol, maxit = E.getTolerances()
+    Print("Stopping condition: tol=%.4g, maxit=%d" % (tol, maxit))
+    nconv =  E.getConverged()
+    ans = []
+    for i in range(nconv):
+        ans.append(E.getEigenvalue(i))
+    return ans
+    
+
+
+
 H = create_H()
 print("Hamiltonian Created")
 print(herm(H))
@@ -98,12 +149,24 @@ for H in gamma:
     plt.imshow(np.array(mat).reshape(2**int(N/2),2**int(N/2)))
     plt.show()
 
-'''
 print(H.shape)
 print("Starting Eigenvalue Computation")
 eig = LA.eigvalsh(H)
 print(eig)
 plt.hist(eig, 20, normed=0, histtype='step',label ='Energy')
-#plt.show()
-plt.savefig("Coupled_SYK_q4_N12",bbox='tight')
+plt.show()
+#plt.savefig("Test_Coupled_SYK_q4_N12",bbox='tight')
 plt.close()
+
+'''
+print("Finding Eigenvalues")
+eig = LA.eigvalsh(H)
+print(eig)
+eig = find_eigval(H)
+print(eig)
+'''
+plt.hist(eig, 20, normed=0, histtype='step',label ='Energy')
+plt.show()
+#plt.savefig("Test_Coupled_SYK_q4_N12",bbox='tight')
+plt.close()
+'''
