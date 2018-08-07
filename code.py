@@ -1,15 +1,14 @@
 #! /usr/bin/env python
 import numpy as np
-from tqdm import tqdm
 import scipy.linalg as LA
 import random
 import itertools
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
+import pickle
+import h5py
+import argparse
+#print("MAKE SURE YOU CHANGE THE FILE NAME")
+#input("Press enter to continue")
 
-kkk=cm.gist_stern # Put the Plotting Style here
-print("MAKE SURE YOU CHANGE THE FILE NAME")
-input("Press enter to continue")
 def herm(ww):
     if(np.allclose(ww, np.conj(ww).T)):
         return "Hermitian"
@@ -28,9 +27,16 @@ def check_sparcity(a):
     print(len(mat))
     return nonzero/len(k),mat
 
+parser = argparse.ArgumentParser()
+parser.add_argument("-N","--number",help="Number of Particles in Each SYK",type=int)
+parser.add_argument("-g","--coupling",help="Coupling COnstant",type=float)
+args = parser.parse_args()
 
 J = 1
-N = 8
+N = args.number
+g = args.coupling
+print("Number:",N)
+print("Coupling:",g)
 print(2**N,2**int(N/2))
 
 def create_gamma():
@@ -53,7 +59,11 @@ def create_free_H(gamma,q=4,rand=True,g=1):
     print("Created Gamma matrices")
     H = np.zeros([2**int(N/2),2**int(N/2)])
     length =  sum(1 for _ in itertools.permutations(gamma,q))
-    for i in tqdm(itertools.combinations(gamma,q),total=length,desc=str(q)+":Body Term"):
+
+    #import tqdm as tqdm
+    #for i in tqdm.tqdm(itertools.combinations(gamma,q)):
+
+    for i in itertools.combinations(gamma,q):
         ans = np.identity(2**int(N/2))
         if not (len(i) == q):
             print("ERROR")
@@ -68,16 +78,17 @@ def create_free_H(gamma,q=4,rand=True,g=1):
         H = np.add(H,ans)
     return H
 
-def create_H(couple=False):
+def create_H(g,couple=False):
     coup = 4 #Coupling term
     gamma = create_gamma()
+    print("Created Gamma matrices")
     free_H1 = np.kron(np.array(create_free_H(gamma)),np.identity(2**int(N/2)))
     free_H2 = np.kron(np.identity(2**int(N/2)),np.array(create_free_H(gamma)))
     coup = np.zeros([2**int(N),2**int(N)])
     for k in gamma:
         coup = np.add(coup,np.kron(k,k))
     H = np.add(free_H1,free_H2)
-    H = np.add(coup,H)
+    H = np.add(g*coup,H)
     return H
 
 
@@ -92,7 +103,7 @@ def find_eigval(H):
     A.setSizes(H.shape)
     A.setFromOptions()
     A.setUp()
-    A[:,:] = H[:,:]
+    A[:,:] = np.array(H,dtype=np.complex64)[:,:]
     A.assemble()
     E = SLEPc.EPS()
     E.create()
@@ -120,8 +131,8 @@ def find_eigval(H):
     Print(" the maximum dimension of the subspace to be used by the solver: %d " % ncv)
     Print(" the maximum dimension allowed for the projected problem: %d" % mpd)
     
-    tol, maxit = E.getTolerances()
-    Print("Stopping condition: tol=%.4g, maxit=%d" % (tol, maxit))
+    #tol, maxit = E.getTolerances()
+    #Print("Stopping condition: tol=%.4g, maxit=%d" % (tol, maxit))
     nconv =  E.getConverged()
     ans = []
     for i in range(nconv):
@@ -130,43 +141,12 @@ def find_eigval(H):
     
 
 
-
-H = create_H()
+print("Creating with coupling:",g)
+H = create_H(g)
+#H = create_free_H(create_gamma())
+with h5py.File('hamiltonian_coup_'+str(g),'w') as fp:
+  fp.create_dataset('data',data=H)
+#with open('hamiltonian_coup_'+str(g),'wb') as fp:
+  #pickle.dump(H,fp)
 print("Hamiltonian Created")
 print(herm(H))
-#per,mat = check_sparcity(H)
-#print(per)
-#plt.imshow(np.array(mat).reshape(2**int(N/2),2**int(N/2)))
-#plt.show()
-'''
-gamma = create_gamma()
-kk = 0
-for H in gamma:
-    per,mat = check_sparcity(H)
-    print(per)
-    plt.title(str(kk))
-    kk = kk + 1
-    plt.imshow(np.array(mat).reshape(2**int(N/2),2**int(N/2)))
-    plt.show()
-
-print(H.shape)
-print("Starting Eigenvalue Computation")
-eig = LA.eigvalsh(H)
-print(eig)
-plt.hist(eig, 20, normed=0, histtype='step',label ='Energy')
-plt.show()
-#plt.savefig("Test_Coupled_SYK_q4_N12",bbox='tight')
-plt.close()
-
-'''
-print("Finding Eigenvalues")
-eig = LA.eigvalsh(H)
-print(eig)
-eig = find_eigval(H)
-print(eig)
-'''
-plt.hist(eig, 20, normed=0, histtype='step',label ='Energy')
-plt.show()
-#plt.savefig("Test_Coupled_SYK_q4_N12",bbox='tight')
-plt.close()
-'''
