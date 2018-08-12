@@ -92,53 +92,6 @@ def create_H(g,couple=False):
     return H
 
 
-def find_eigval(H):
-    print("Importing Stuff")
-    import sys, slepc4py
-    from petsc4py import PETSc
-    from slepc4py import SLEPc
-    import numpy
-    A = PETSc.Mat().create()
-    print(H.shape)
-    A.setSizes(H.shape)
-    A.setFromOptions()
-    A.setUp()
-    A[:,:] = np.array(H,dtype=np.complex64)[:,:]
-    A.assemble()
-    E = SLEPc.EPS()
-    E.create()
-    E.setOperators(A)
-    E.setProblemType(SLEPc.EPS.ProblemType.HEP)
-    E.setDimensions(nev = H.shape[0])
-    E.setTolerances(1e-8,1000)
-    E.setFromOptions()
-    E.solve()
-    Print = PETSc.Sys.Print
-    Print()
-    Print("******************************")
-    Print("*** SLEPc Solution Results ***")
-    Print("******************************")
-    Print()
-    
-    its = E.getIterationNumber()
-    Print("Number of iterations of the method: %d" % its)
-    
-    eps_type = E.getType()
-    Print("Solution method: %s" % eps_type)
-    
-    nev, ncv, mpd = E.getDimensions()
-    Print("Number of requested eigenvalues: %d" % nev)
-    Print(" the maximum dimension of the subspace to be used by the solver: %d " % ncv)
-    Print(" the maximum dimension allowed for the projected problem: %d" % mpd)
-    
-    #tol, maxit = E.getTolerances()
-    #Print("Stopping condition: tol=%.4g, maxit=%d" % (tol, maxit))
-    nconv =  E.getConverged()
-    ans = []
-    for i in range(nconv):
-        ans.append(E.getEigenvalue(i))
-    return ans
-    
 
 
 print("Creating with coupling:",g)

@@ -1,5 +1,5 @@
 #!/bin/sh
-for i in 16 18 20
+for i in 12
 do
 N=$i
 name="N"$N"C"
@@ -41,3 +41,4 @@ done
 cd ..
 done
 echo "DONE"
+qstat -a
